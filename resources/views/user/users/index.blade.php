@@ -65,14 +65,15 @@
 
 <script>
 
-	function deleteUser( e ){
-
+	function deleteUser( e )
+	{
 		e.preventDefault();
 
 		const userId = e.srcElement.getAttribute("user-id");
 
 		axios.post( `/users/${userId}/delete`, {
-			method: 'DELETE'
+			method: 'DELETE',
+			userId
 		})
 		.then( window.location.replace("/users") );
 	}
