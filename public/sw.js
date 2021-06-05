@@ -9,10 +9,10 @@ const usersViews = Array( USERS_NUM ).fill().map((_, i) => `users/${100-i}`);
 const usersEdits = Array( USERS_NUM ).fill().map((_, i) => `users/${100-i}/edit`);
 
 // Caches
-const STATIC_CACHE = "crud-static-v2.0";
-const INMUTABLE_CACHE = "crud-inmutable-v2.0";
-const DYNAMIC_CACHE = "crud-dynamic-v2.0";
-const USERS_CACHE = "crud-users-v2.0";
+const STATIC_CACHE = "crud-static-v1.0";
+const INMUTABLE_CACHE = "crud-inmutable-v1.0";
+const DYNAMIC_CACHE = "crud-dynamic-v1.0";
+const USERS_CACHE = "crud-users-v1.0";
 
 // APP_SHELLS
 const STATIC_APP_SHELL = [
@@ -38,7 +38,6 @@ const INMUTABLE_APP_SHELL = [
 
 self.addEventListener("install", (e) => {
 
-    
     // Register caches
     const staticCache = caches.open(STATIC_CACHE).then((cache) => {
         cache.addAll(STATIC_APP_SHELL);
