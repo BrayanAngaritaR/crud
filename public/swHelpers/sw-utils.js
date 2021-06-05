@@ -47,7 +47,9 @@ function handleGet( request )
 
         return res.clone();
     })
-    .catch( caches.match(request.clone()) );
+    .catch(err => {
+        return caches.match( request.clone() )
+    });
 }
 
 function sendRequestsToServer( requests )
