@@ -20,6 +20,8 @@ const STATIC_APP_SHELL = [
     "users",
     "user/create",
     "swHelpers/register.js",
+    "swHelpers/sw-db.js",
+    "swHelpers/sw-utils.js",
     "favicon.ico"
 ];
 
