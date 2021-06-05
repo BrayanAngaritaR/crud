@@ -1,18 +1,16 @@
-// Imports
-importScripts( 'js/pouchdb.min.js' );
-
 const db = new PouchDB('crud_db');
 const tag = "new-user";
-const customResponse = "Guardado offline";
+const customResponse = "[offline] Usuario creado exitosamente";
 
-function saveToDb(request){
+function saveToDb( request ){
 
-    return request.json()
-    .then(text => {
+    return request.clone().json()
+    .then(body => {
         const builtRequest = {
             _id: new Date().toISOString(),
-            url: 'https://crud.test/user/create',
-            ...text
+            url: request.clone().url,
+            method: body.method,
+            body: body
         };
 
         return db.put( builtRequest )
@@ -21,5 +19,4 @@ function saveToDb(request){
             return new Response( customResponse );
         });
     });
-
 }

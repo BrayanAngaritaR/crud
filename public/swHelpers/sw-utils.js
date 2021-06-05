@@ -1,38 +1,35 @@
-// Imports
-importScripts( 'swHelpers/sw-db.js' );
-
 function handlePost( request ){
 
-    // Si el navegador soporta envío de peticiones offline
+    // Si el navegador soporta envío de peticiones offline, se guarda petición en DB
     if( self.registration.sync ) return saveToDb( request.clone() );
     
+    // Si el navegador no soporta peticiones offline, entonces se hace la petición inmediatamente y no se guarda en DB
     return fetch( request.clone() );
 }
 
 function handleGet( request ){
 
-    // Primero hace la petición al server
-    return fetch( request )
+    return fetch( request.clone() )
     .then(res => {
 
-        // Si la petición al server falla, entonces busca ese mismo recurso en la cache
-        if( !res ) caches.match( request );
+        if( !res ) return caches.match(request.clone());
 
-        caches.match( request )
-        .then(itMatches => {
-
-            // Si el recurso se obtuvo correctamente del server y todavía no está en cache, entonces lo guardamos en cache (DYNAMIC_CACHE)
-            if( !itMatches ){
-                caches.open( DYNAMIC_CACHE )
-                .then(dynamicCache => {
-                    if( !request.url.includes('chrome-extension') ) dynamicCache.put( request, res );
+        if ( !request.clone().url.includes("chrome-extension") ) {
+            
+            // Lo guardamos en cache ( DYNAMIC_CACHE ) y lo devolvemos una vez guardado
+            return caches.open( DYNAMIC_CACHE )
+            .then(dynamicCache => {
+                
+                return dynamicCache.put( request.clone(), res.clone() )
+                .then(() => {
+                    return res.clone();
                 });
-            }
-        });
+            });
+        }
 
         return res.clone();
     })
-    .catch( caches.match( request ) );
+    .catch( caches.match(request.clone()) );
 }
 
 function sendRequestsToServer( requests ){
@@ -45,30 +42,17 @@ function sendRequestsToServer( requests ){
         docs.rows.forEach(row => {
             const doc = row.doc;
 
+            console.log( "Enviando requests a Server..." )
             const requestSended = fetch( row.doc.url, {
-                method: 'POST',
+                method: row.doc.method,
                 headers: {
-                    'Content-Type'      : 'application/json;charset=UTF-8'
+                    'Content-Type': 'application/json;charset=UTF-8'
                 },
-                body: JSON.stringify( doc )
+                body: JSON.stringify( doc.body )
             })
             .then(() => {
                 db.remove( doc );
             });
-
-            /*const requestSended = fetch( doc.url, {
-                method: 'POST',
-                headers: {
-                    'Content-Type'      : 'application/x-www-form-urlencoded;charset=UTF-8',
-                    //'X-CSRF-TOKEN'      : doc.csrf,
-                    //'X-Requested-With'  : 'XMLHttpRequest',
-                    //'X-XSRF-TOKEN'      : doc.xsrf
-                },
-                body: JSON.stringify( doc )
-            })
-            .then(() => {
-                return db.remove( doc );
-            });*/
 
             requests.push( requestSended );
         });
