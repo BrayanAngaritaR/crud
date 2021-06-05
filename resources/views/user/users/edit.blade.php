@@ -25,11 +25,11 @@
 
 <script>
 
-	function updateUser( e ){
-
+	function updateUser( e )
+	{
 		e.preventDefault();
 
-		cconst userId = e.srcElement.getAttribute("user-id");
+		const userId = e.srcElement.getAttribute("user-id");
 		const name = document.getElementById("name").value;
 		const email = document.getElementById("email").value;
 

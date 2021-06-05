@@ -1,9 +1,8 @@
 const db = new PouchDB('crud_db');
 const tag = "new-user";
-const customResponse = "[offline] Usuario creado exitosamente";
 
-function saveToDb( request ){
-
+function saveToDb( request )
+{
     return request.clone().json()
     .then(body => {
         const builtRequest = {
@@ -14,9 +13,9 @@ function saveToDb( request ){
         };
 
         return db.put( builtRequest )
-        .then(res => {
-            self.registration.sync.register( tag );       
-            return new Response( customResponse );
+        .then(() => {
+            self.registration.sync.register( tag ); 
+            return body;   
         });
     });
 }

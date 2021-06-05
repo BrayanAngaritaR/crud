@@ -4,7 +4,7 @@ importScripts("swHelpers/sw-utils.js");
 importScripts("swHelpers/sw-db.js");
 
 // Users Helpers
-const USERS_NUM = 15;
+const USERS_NUM = 10;
 const usersViews = Array( USERS_NUM ).fill().map((_, i) => `users/${100-i}`);
 const usersEdits = Array( USERS_NUM ).fill().map((_, i) => `users/${100-i}/edit`);
 
@@ -36,18 +36,24 @@ const INMUTABLE_APP_SHELL = [
     "https://fonts.gstatic.com/s/nunito/v16/XRXV3I6Li01BKofINeaBTMnFcQ.woff2"
 ];
 
-self.addEventListener("install", (e) => {
-
+self.addEventListener("install", e => {
     // Register caches
-    const staticCache = caches.open(STATIC_CACHE).then((cache) => {
-        cache.addAll(STATIC_APP_SHELL);
+    const staticCache = caches.open( STATIC_CACHE ).then(cache => {
+        cache.addAll( STATIC_APP_SHELL );
     });
-    const inmutableCache = caches.open(INMUTABLE_CACHE).then((cache) => {
-        cache.addAll(INMUTABLE_APP_SHELL);
+    const inmutableCache = caches.open( INMUTABLE_CACHE ).then(cache => {
+        cache.addAll( INMUTABLE_APP_SHELL );
     });
-    const usersCache = caches.open(USERS_CACHE).then((cache) => {
-        cache.addAll( usersEdits );
-        cache.addAll( usersViews );
+    const usersCache = caches.has( USERS_CACHE ).then(exists => {
+
+        if( !exists ){
+            return caches.open( USERS_CACHE ).then(cache => {
+                cache.addAll( usersViews );
+                cache.addAll( usersEdits );
+            });
+        }
+
+        return exists;
     });
 
     self.skipWaiting();
@@ -55,34 +61,27 @@ self.addEventListener("install", (e) => {
     e.waitUntil(Promise.all([ staticCache, inmutableCache, usersCache ]));
 });
 
-self.addEventListener("activate", (e) => {
+self.addEventListener("activate", e => {
     // Remove cache old versions
-    const remove_cache_old_versions = caches.keys().then((keys) => {
-        keys.forEach((key) => {
-            if (key.includes("static") && key !== STATIC_CACHE) {
-                return caches.delete(key);
-            }
-
-            if (key.includes("dynamic") && key !== DYNAMIC_CACHE) {
-                return caches.delete(key);
-            }
+    const remove_cache_old_versions = caches.keys().then(keys => {
+        keys.forEach(key => {
+            if( key.includes("static") && key !== STATIC_CACHE ) return caches.delete( key );
+            if( key.includes("dynamic") && key !== DYNAMIC_CACHE ) return caches.delete( key );
         });
     });
 
-    e.waitUntil(remove_cache_old_versions);
+    e.waitUntil( remove_cache_old_versions );
 });
 
-self.addEventListener("fetch", (e) => {
+self.addEventListener("fetch", e => {
 
     var response = null;
-    const request = e.request;
-    const method = e.request.method;
+    const request = e.request.clone();
+    const method = e.request.clone().method;
 
-    switch ( method ) {
+    switch ( method )
+    {
         case "POST":
-            response = handlePost( request.clone() )
-            break;
-        case "DELETE":
             response = handlePost( request.clone() )
             break;
         default:
@@ -92,9 +91,10 @@ self.addEventListener("fetch", (e) => {
     e.respondWith( response );
 });
 
-self.addEventListener("sync", (e) => {
-    if (e.tag === tag) {
-        var requestsSended = sendRequestsToServer();
-        e.waitUntil(requestsSended);
+self.addEventListener("sync", e => {
+    if ( e.tag === tag )
+    {
+        const requestsSended = sendRequestsToServer();
+        e.waitUntil( requestsSended );
     }
 });

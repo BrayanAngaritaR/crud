@@ -23,8 +23,8 @@
 
 <script>
 
-	function createUser( e ){
-
+	function createUser( e )
+	{
 		e.preventDefault();
 		
 		const name = document.getElementById("name").value;
